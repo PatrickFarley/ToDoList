@@ -11,13 +11,15 @@ import android.util.Log;
  * superclass' getWritableDatabase command
  */
 public class TaskDBHelper extends SQLiteOpenHelper {
+
+    // takes a context upon construction
     public TaskDBHelper(Context context) {
         super(context, TaskContract.DB_NAME, null, TaskContract.DB_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase sqlDB) {
-        // method creates table in this database
+        // method creates table in this given database
         String sqlQuery =
                 "CREATE TABLE " + TaskContract.TABLE + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                         + TaskContract.Columns.TASK + " TEXT)";

@@ -1,8 +1,10 @@
 package edu.wheaton.patrickfarley.todolist;
 
 import android.app.AlertDialog;
+import android.app.ListActivity;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -10,12 +12,16 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.SimpleCursorAdapter;
 
 import edu.wheaton.patrickfarley.todolist.db.TaskContract;
 import edu.wheaton.patrickfarley.todolist.db.TaskDBHelper;
 
 
-public class MainActivity extends ActionBarActivity {
+
+
+// since it extends ListActivity, it must implement a ListView in its layout.
+public class MainActivity extends ListActivity {
 
     private TaskDBHelper helper;
 
@@ -23,6 +29,15 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        SQLiteDatabase sqlDB = new TaskDBHelper(this).getWritableDatabase();
+        Cursor cursor = sqlDB.query(TaskContract.TABLE, new String[]{TaskContract.Columns.TASK},
+                null,null,null,null,null);
+        cursor.moveToFirst();
+        while(cursor.moveToNext()) {
+            Log.d("MainActivity cursor",cursor.getString(cursor.getColumnIndexOrThrow(TaskContract.Columns.TASK)));
+        }
+        updateUI();
     }
 
 
@@ -52,9 +67,11 @@ public class MainActivity extends ActionBarActivity {
 
                         Log.d("MainActivity",task);
 
-                        // construct a TaskDBHelper object inside this method
+                        // construct a TaskDBHelper object inside this method (using this activity's
+                        // innate database)
                         helper = new TaskDBHelper(MainActivity.this);
-                        // instantiate the database: this automatically references
+                        // instantiate the database: this automatically references MainActivity's
+                        // innate database
                         SQLiteDatabase db = helper.getWritableDatabase();
 
                         // make a ContentValues object
@@ -65,6 +82,7 @@ public class MainActivity extends ActionBarActivity {
                         // insert the colums from the ContentValues object into the referenced
                         // database table.
                         db.insertWithOnConflict(TaskContract.TABLE,null,values, SQLiteDatabase.CONFLICT_IGNORE);
+                        updateUI();
                     }
                 });
 
@@ -75,5 +93,27 @@ public class MainActivity extends ActionBarActivity {
             default:
                 return false;
         }
+    }
+
+    private void updateUI() {
+
+        helper = new TaskDBHelper(MainActivity.this);
+        SQLiteDatabase sqlDB = helper.getWritableDatabase();
+        Cursor cursor = sqlDB.query(TaskContract.TABLE,
+                new String[]{TaskContract.Columns._ID, TaskContract.Columns.TASK},
+                null,null,null,null,null);
+
+        // this activity's ListAdapter. must pass in the task_view layout, as well as the location
+        // of the data to be presented.
+        SimpleCursorAdapter listAdapter = new SimpleCursorAdapter(
+                this, // context
+                R.layout.task_view, // the layout template to use to present each data
+                cursor, // pass in cursor to bind to.
+                new String[] {TaskContract.Columns.TASK}, // array of items to bind
+                new int[] {R.id.taskTextView},// parallel array of layout object to bind data to
+                0);
+
+        // this activity displays a ListView and uses a ListAdapter to bind the data to the view
+        this.setListAdapter(listAdapter);
     }
 }
