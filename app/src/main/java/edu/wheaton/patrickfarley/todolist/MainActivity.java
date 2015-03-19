@@ -1,6 +1,7 @@
 package edu.wheaton.patrickfarley.todolist;
 
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.app.ListActivity;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -11,8 +12,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
 import edu.wheaton.patrickfarley.todolist.db.TaskContract;
 import edu.wheaton.patrickfarley.todolist.db.TaskDBHelper;
@@ -45,7 +48,7 @@ public class MainActivity extends ListActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -53,6 +56,7 @@ public class MainActivity extends ListActivity {
         switch (item.getItemId()) {
             case R.id.action_add_task:
                 Log.d("MainActivity", "Add a new task");
+                // an AlertDialog Builder object
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("add a task");
                 builder.setMessage("What to do?");
@@ -115,5 +119,31 @@ public class MainActivity extends ListActivity {
 
         // this activity displays a ListView and uses a ListAdapter to bind the data to the view
         this.setListAdapter(listAdapter);
+    }
+
+    public void onDoneButtonClick(View view) {
+        // get a ref to the parent view of the calling button (get the listView)
+        View v = (View) view.getParent();
+        // get a ref to the TextView corresponding to this button
+        TextView taskTextView = (TextView) v.findViewById(R.id.taskTextView);
+        // get the text from that TextView
+        String task = taskTextView.getText().toString();
+
+        // write an SQL command to delete said task from the table
+        String sql = String.format("DELETE FROM %s WHERE %s = '%s'",
+                TaskContract.TABLE,
+                TaskContract.Columns.TASK,
+                task);
+
+        // construct a db helper with MainActivity's database, and use it to return a reference
+        // to said database
+        helper = new TaskDBHelper(MainActivity.this);
+        SQLiteDatabase sqlDB = helper.getWritableDatabase();
+
+        // execute the command in the database
+        sqlDB.execSQL(sql);
+
+        // finally, update the UI to the database, which is now missing the previous entry.
+        updateUI();
     }
 }
