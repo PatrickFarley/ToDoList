@@ -16,12 +16,31 @@
         android:id = "@android:id/list"
         android:layout_weight ="1" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="New Button"
-        android:id="@+id/button"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="1" />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="75dp">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/evalEntField"
+            android:layout_gravity="start"
+            android:layout_weight="1"
+            android:inputType="number"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/evalButtonText"
+            android:id="@+id/evalButton"
+            android:layout_gravity="start"
+            android:layout_weight="1"
+            android:onClick="onEvaluate" />
+
+
+        </LinearLayout>
+
+
 
 </LinearLayout>

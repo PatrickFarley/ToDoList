@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.app.ListActivity;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.ActionBarActivity;
@@ -145,5 +146,13 @@ public class MainActivity extends ListActivity {
 
         // finally, update the UI to the database, which is now missing the previous entry.
         updateUI();
+    }
+
+    public void onEvaluate(View view) {
+        Intent intent = new Intent(this, EvalSheet.class);
+        EditText editText = (EditText)findViewById(R.id.evalEntField);
+        int minutes = Integer.parseInt(editText.getText().toString());
+        intent.putExtra("MINUTES_AMOUNT",minutes);
+        startActivity(intent);
     }
 }
