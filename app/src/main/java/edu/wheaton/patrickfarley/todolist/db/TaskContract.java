@@ -13,7 +13,9 @@ public class TaskContract {
     public static final String TABLE = "tasks";
 
     public static class Columns {
-        public static final String TASK = "task";
         public static final String _ID = BaseColumns._ID;
+        public static final String TASK = "task";
+        public static final String PRIORITY = "priority";
+        public static final String TIME = "time";
     }
 }

@@ -12,7 +12,7 @@ import android.util.Log;
  */
 public class TaskDBHelper extends SQLiteOpenHelper {
 
-    // takes a context upon construction
+    // takes a context upon construction, and relises on SQLiteOpenHelper constructor
     public TaskDBHelper(Context context) {
         super(context, TaskContract.DB_NAME, null, TaskContract.DB_VERSION);
     }
@@ -21,14 +21,17 @@ public class TaskDBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqlDB) {
         // method creates table in this given database
         String sqlQuery =
-                "CREATE TABLE " + TaskContract.TABLE + " (" + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                        + TaskContract.Columns.TASK + " TEXT)";
+                "CREATE TABLE " + TaskContract.TABLE + " ( _id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                        + TaskContract.Columns.TASK + " TEXT NOT NULL, "
+                        + TaskContract.Columns.PRIORITY + " INTEGER NOT NULL, "
+                        + TaskContract.Columns.TIME + " INTEGER NOT NULL);";
         Log.d("TaskDBHelper", "Query to form table:" + sqlQuery);
 
         // send the SQL command
         sqlDB.execSQL(sqlQuery);
     }
 
+    // ??? may need to change this in the future. don't want table being deleted if out-of-date.
     @Override
     public void onUpgrade(SQLiteDatabase sqlDB, int i, int i2){
         sqlDB.execSQL("DROP TABLE IF EXISTS "+TaskContract.TABLE);

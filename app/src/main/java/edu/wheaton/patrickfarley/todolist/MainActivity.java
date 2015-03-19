@@ -1,9 +1,11 @@
 package edu.wheaton.patrickfarley.todolist;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.ListActivity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -11,12 +13,16 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.InputMismatchException;
 
 import edu.wheaton.patrickfarley.todolist.db.TaskContract;
 import edu.wheaton.patrickfarley.todolist.db.TaskDBHelper;
@@ -28,6 +34,7 @@ import edu.wheaton.patrickfarley.todolist.db.TaskDBHelper;
 public class MainActivity extends ListActivity {
 
     private TaskDBHelper helper;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,24 +60,52 @@ public class MainActivity extends ListActivity {
     }
 
     @Override
+    //??? need an alertDialog with 3 different fields.
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+
+            // if the add action icon is clicked:
             case R.id.action_add_task:
                 Log.d("MainActivity", "Add a new task");
-                // an AlertDialog Builder object
+
+                // use an AlertDialog Builder object
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("add a task");
                 builder.setMessage("What to do?");
-                // create a blank EditText object
-                final EditText inputField = new EditText(this);
-                builder.setView(inputField);
+
+                // construct a View with the new_task_entry layout
+                final LayoutInflater inflater = getLayoutInflater();
+                final View newView = inflater.inflate(R.layout.new_task_entry, null);
+
+                // pass the same view into the alertDialog, for the user to ineract with
+                builder.setView(newView);
+
+                // set "add" button
                 builder.setPositiveButton("add",new DialogInterface.OnClickListener(){
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i){
-                        // store entered text in a string
-                        String task = inputField.getText().toString();
 
-                        Log.d("MainActivity",task);
+                        // store entered data:
+                        final EditText taskField = (EditText)newView.findViewById(R.id.taskEntry);
+                        final EditText priorityField = (EditText)newView.findViewById(R.id.priorityEntry);
+                        final EditText timeField = (EditText)newView.findViewById(R.id.timeEntry);
+
+                        String task = "unnamed task";
+                        int priority = -1;
+                        int time = -1;
+
+                        try {
+                            task = taskField.getText().toString();
+                            priority = Integer.parseInt(priorityField.getText().toString());
+                            time = Integer.parseInt(timeField.getText().toString());
+                        } catch (NumberFormatException e) {
+                            Context context = getApplicationContext();
+                            CharSequence toastMsg = "Enter a positive integer";
+                            int duration = Toast.LENGTH_SHORT;
+                            Toast toast = Toast.makeText(context, toastMsg, duration);
+                            toast.show();
+                            return;
+                        }
 
                         // construct a TaskDBHelper object inside this method (using this activity's
                         // innate database)
@@ -84,6 +119,8 @@ public class MainActivity extends ListActivity {
                         values.clear();
                         // put our task string into the TASK column of the ContentValues object
                         values.put(TaskContract.Columns.TASK,task);
+                        values.put(TaskContract.Columns.PRIORITY,priority);
+                        values.put(TaskContract.Columns.TIME,time);
                         // insert the colums from the ContentValues object into the referenced
                         // database table.
                         db.insertWithOnConflict(TaskContract.TABLE,null,values, SQLiteDatabase.CONFLICT_IGNORE);
@@ -91,8 +128,9 @@ public class MainActivity extends ListActivity {
                     }
                 });
 
+                // set "Cancel" button
                 builder.setNegativeButton("Cancel",null);
-                // show the created Alert Dialog
+                // create and display the Alert Dialog
                 builder.create().show();
                 return true;
             default:
@@ -102,20 +140,26 @@ public class MainActivity extends ListActivity {
 
     private void updateUI() {
 
+        // open the database and get a cursor over the desired fields
         helper = new TaskDBHelper(MainActivity.this);
         SQLiteDatabase sqlDB = helper.getWritableDatabase();
         Cursor cursor = sqlDB.query(TaskContract.TABLE,
-                new String[]{TaskContract.Columns._ID, TaskContract.Columns.TASK},
+                new String[]{TaskContract.Columns._ID, TaskContract.Columns.TASK,
+                TaskContract.Columns.PRIORITY, TaskContract.Columns.TIME},
                 null,null,null,null,null);
 
-        // this activity's ListAdapter. must pass in the task_view layout, as well as the location
+        // this activity's ListAdapter. we must pass in the task_view layout, as well as the location
         // of the data to be presented.
         SimpleCursorAdapter listAdapter = new SimpleCursorAdapter(
                 this, // context
                 R.layout.task_view, // the layout template to use to present each data
                 cursor, // pass in cursor to bind to.
-                new String[] {TaskContract.Columns.TASK}, // array of items to bind
-                new int[] {R.id.taskTextView},// parallel array of layout object to bind data to
+                new String[] {TaskContract.Columns.TASK,
+                        TaskContract.Columns.PRIORITY,
+                        TaskContract.Columns.TIME}, // array of items to bind
+                new int[] {R.id.taskField,
+                        R.id.priorityField,
+                        R.id.timeField},// parallel array of layout object to bind data to
                 0);
 
         // this activity displays a ListView and uses a ListAdapter to bind the data to the view
@@ -126,11 +170,11 @@ public class MainActivity extends ListActivity {
         // get a ref to the parent view of the calling button (get the listView)
         View v = (View) view.getParent();
         // get a ref to the TextView corresponding to this button
-        TextView taskTextView = (TextView) v.findViewById(R.id.taskTextView);
+        TextView taskField = (TextView) v.findViewById(R.id.taskField);
         // get the text from that TextView
-        String task = taskTextView.getText().toString();
+        String task = taskField.getText().toString();
 
-        // write an SQL command to delete said task from the table
+        // write an SQL command to delete said row from the table by matching its task value
         String sql = String.format("DELETE FROM %s WHERE %s = '%s'",
                 TaskContract.TABLE,
                 TaskContract.Columns.TASK,
