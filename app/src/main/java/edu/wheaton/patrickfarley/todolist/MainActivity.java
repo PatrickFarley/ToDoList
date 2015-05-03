@@ -94,7 +94,7 @@ public class MainActivity extends ListActivity {
                             time = Integer.parseInt(timeField.getText().toString());
                         } catch (NumberFormatException e) {
                             Context context = getApplicationContext();
-                            CharSequence toastMsg = "Enter a positive integer";
+                            CharSequence toastMsg = "Enter a positive integer for priority and time";
                             int duration = Toast.LENGTH_SHORT;
                             Toast toast = Toast.makeText(context, toastMsg, duration);
                             toast.show();
@@ -190,8 +190,18 @@ public class MainActivity extends ListActivity {
         Log.d("MainActivity","onEvaluate has been called");
         Intent intent = new Intent(this, EvalSheet.class);
         EditText editText = (EditText)findViewById(R.id.evalEntField);
-        int minutes = Integer.parseInt(editText.getText().toString());
-        intent.putExtra("MINUTES_AMOUNT",minutes);
-        startActivity(intent);
+        try {
+            int minutes = Integer.parseInt(editText.getText().toString());
+            intent.putExtra("MINUTES_AMOUNT",minutes);
+            startActivity(intent);
+        } catch (NumberFormatException e) {
+            Context context = getApplicationContext();
+            CharSequence toastMsg = "Enter a positive integer here";
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(context, toastMsg, duration);
+            toast.show();
+            return;
+        }
+
     }
 }

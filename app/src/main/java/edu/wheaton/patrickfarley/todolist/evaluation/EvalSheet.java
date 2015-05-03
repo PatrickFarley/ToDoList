@@ -36,29 +36,13 @@ public class EvalSheet extends ListActivity {
         Intent intent = getIntent();
         minutes = intent.getIntExtra("MINUTES_AMOUNT", 0);
 
-        /*
-        helper = new TaskDBHelper(EvalSheet.this);
-        SQLiteDatabase sqlDB = helper.getWritableDatabase();
-        Cursor cursor = sqlDB.query(TaskContract.TABLE,
-                new String[]{TaskContract.Columns._ID, TaskContract.Columns.TASK,
-                        TaskContract.Columns.PRIORITY, TaskContract.Columns.TIME},
-                null,null,null,null,null);
-
-        SimpleCursorAdapter listAdapter = new SimpleCursorAdapter(
-                this, // context
-                R.layout.eval_task_view, // the layout template to use to present each data
-                cursor, // pass in cursor to bind to.
-                new String[] {TaskContract.Columns.TASK}, // array of items to bind
-                new int[] {R.id.taskField},// parallel array of layout object to bind data to
-                0);
-
-        */
         // HERE make the listAdapter object for display.
 
         fillInternalList();
-        // now tasklist is filled. Make a final list of strings for the answer:
+        // now tasklist is filled.
 
-
+        prioritySort();
+        // now tasklist is sorted. Make a final list of strings for the answer:
 
         ArrayAdapter<String> adapter = new ArrayAdapter(this, R.layout.eval_task_view, R.id.taskField, makeEvalList(minutes));
         this.setListAdapter(adapter);
@@ -88,7 +72,10 @@ public class EvalSheet extends ListActivity {
     }
 
 
-
+    /**
+     * This method fills an internal arrayList of taskItem object, from a table in the app's
+     * database
+     */
     public void fillInternalList(){
         helper = new TaskDBHelper(EvalSheet.this);
         SQLiteDatabase sqlDB = helper.getWritableDatabase();
@@ -96,13 +83,6 @@ public class EvalSheet extends ListActivity {
                 new String[]{TaskContract.Columns._ID, TaskContract.Columns.TASK,
                         TaskContract.Columns.PRIORITY, TaskContract.Columns.TIME},
                 null,null,null,null,null);
-
-        /*
-        (TaskContract.TABLE,
-                new String[]{TaskContract.Columns.TASK,TaskContract.Columns.PRIORITY,
-                TaskContract.Columns.TIME},
-                null,null,null,TaskContract.Columns.PRIORITY,null)
-         */
 
 
         if (cursor.moveToFirst() != false){
@@ -122,7 +102,7 @@ public class EvalSheet extends ListActivity {
     }
 
     /**
-     * New method for making the list of evaluation strings
+     * This method fills and returns a list of evaluation strings
      * @param free_time
      * @return
      */
@@ -154,8 +134,8 @@ public class EvalSheet extends ListActivity {
 
         }
 		/* at this point, the assignedTimes array is filled out. some tasks still have zero
-		 * assigned time and we should ignore these as best we can. We must print* out the tasks which
-		 * do have assigned times.
+		 * assigned time and we should ignore these. We must add all the tasks which
+		 * do have assigned times to evalList.
 		 */
 
         List<String> evalList = new ArrayList<String>();
@@ -168,32 +148,24 @@ public class EvalSheet extends ListActivity {
         return evalList;
     }
 
+    /**
+     * sort by priority
+     */
+    public void prioritySort() {
+        List<TaskItem> list = this.taskList;
 
-    public void sortInternalList(int free_time){
-        if (taskList.isEmpty())
-                return;
-
-        // fill out the assignedTimes array.
-        while (free_time > 0){
-            int bestIndex = -1;
-            double bestWorth =  0;
-
-            for (int i = 0; i<taskList.size(); i++){
-                if (taskList.get(i).calcWorth(assignedTimes[i]+1) > bestWorth){
-                    bestIndex = i;
-                    bestWorth = taskList.get(i).calcWorth(assignedTimes[i]+1);
-                    assignedTimes[i]++;
-                    free_time--;
-                }
+        for (int i = 1; i < list.size(); i++) {
+            TaskItem next = list.get(i);
+            // find the insertion location while moving all larger element up
+            int j = i;
+            while (j > 0 && list.get(j - 1).priority > next.priority) {
+                list.set(j, list.get(j - 1));
+                j--;
             }
-            if (bestIndex == -1){
-                break;
-            }
-
+            // insert the element
+            list.set(j,next);
         }
-        // at this point, the assignedTimes array has been filled out appropriately. now we
-        // must iterate through it, posting (in order of priority) the taskList items and their
-        // assigned minutes. Best way to post an array?
 
     }
+
 }

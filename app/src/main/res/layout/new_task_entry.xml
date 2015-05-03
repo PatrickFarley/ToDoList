@@ -1,31 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Begin label row: -->
 
-    <EditText
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/taskEntry"
-        android:layout_weight="3" />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
 
-    <EditText
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:inputType="number"
-        android:id="@+id/priorityEntry"
-        android:layout_weight="1"
-        android:baselineAligned="false" />
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/taskLabel"
+            android:text="task name"
+            android:layout_weight="3" />
 
-    <EditText
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:inputType="number"
-        android:id="@+id/timeEntry"
-        android:layout_weight="1" />
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/priorityLabel"
+            android:text="priority"
+
+            android:layout_weight="1"
+            android:baselineAligned="false" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/timeLabel"
+            android:text="time (min)"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <!-- Begin content row: -->
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/taskEntry"
+            android:layout_weight="3" />
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:inputType="number"
+            android:id="@+id/priorityEntry"
+            android:layout_weight="1"
+            android:baselineAligned="false" />
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:inputType="number"
+            android:id="@+id/timeEntry"
+            android:layout_weight="1" />
+        </LinearLayout>
+
+
+
 
 </LinearLayout>
