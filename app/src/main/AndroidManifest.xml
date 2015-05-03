@@ -26,7 +26,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".EvalSheet"
+            android:name=".evaluation.EvalSheet"
             android:label="@string/title_activity_eval_sheet"
             android:theme="@style/Theme.AppCompat.Light">
         </activity>

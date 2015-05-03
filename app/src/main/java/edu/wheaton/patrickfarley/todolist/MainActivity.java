@@ -1,8 +1,6 @@
 package edu.wheaton.patrickfarley.todolist;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.app.ListActivity;
 import android.content.ContentValues;
 import android.content.Context;
@@ -10,7 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,12 +19,9 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.InputMismatchException;
-
 import edu.wheaton.patrickfarley.todolist.db.TaskContract;
 import edu.wheaton.patrickfarley.todolist.db.TaskDBHelper;
-
-
+import edu.wheaton.patrickfarley.todolist.evaluation.EvalSheet;
 
 
 // since it extends ListActivity, it must implement a ListView in its layout.
@@ -193,6 +187,7 @@ public class MainActivity extends ListActivity {
     }
 
     public void onEvaluate(View view) {
+        Log.d("MainActivity","onEvaluate has been called");
         Intent intent = new Intent(this, EvalSheet.class);
         EditText editText = (EditText)findViewById(R.id.evalEntField);
         int minutes = Integer.parseInt(editText.getText().toString());
