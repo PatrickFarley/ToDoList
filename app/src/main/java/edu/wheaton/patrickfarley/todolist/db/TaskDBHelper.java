@@ -19,7 +19,7 @@ public class TaskDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqlDB) {
-        // method creates table in this given database
+        // creates table in this given database
         String sqlQuery =
                 "CREATE TABLE " + TaskContract.TABLE + " ( _id INTEGER PRIMARY KEY AUTOINCREMENT, "
                         + TaskContract.Columns.TASK + " TEXT NOT NULL, "

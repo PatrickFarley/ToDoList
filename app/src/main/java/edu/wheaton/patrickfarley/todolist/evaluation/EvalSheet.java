@@ -12,20 +12,21 @@ import android.widget.ArrayAdapter;
 import android.widget.SimpleCursorAdapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import edu.wheaton.patrickfarley.todolist.R;
 import edu.wheaton.patrickfarley.todolist.db.TaskContract;
 import edu.wheaton.patrickfarley.todolist.db.TaskDBHelper;
 
-//??? this class should extend listView. Make an array of task objects,
-// use an adapter, and send to the listView.
+// this class is a ListActivity.
 public class EvalSheet extends ListActivity {
 
-    List<TaskItem> taskList = new ArrayList<TaskItem>();
-    List<String> evalList = new ArrayList<String>();
-    int[] assignedTimes = new int[taskList.size()];
-    int minutes;
+    private List<TaskItem> taskList = new ArrayList<TaskItem>();  // list of task items read from db
+    private List<String> evalList = new ArrayList<String>();    // list of task suggestion strings
+    private int[] assignedTimes = new int[taskList.size()];// array for storing the time allocated to each task
+    private int minutes;                                   // amount of time to allocate (passed in via Intent)
     private TaskDBHelper helper;
 
 
@@ -34,17 +35,22 @@ public class EvalSheet extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_eval_sheet);
         Intent intent = getIntent();
+        // assign the 'minutes' variable
         minutes = intent.getIntExtra("MINUTES_AMOUNT", 0);
 
-        // HERE make the listAdapter object for display.
-
+        // fill the 'taskList' object from db.
         fillInternalList();
-        // now tasklist is filled.
 
+        // 'taskList' is filled. Now sort it by priority.
         prioritySort();
-        // now tasklist is sorted. Make a final list of strings for the answer:
 
+        // 'taskList' is sorted. Make a list of suggestion strings for the answer,
+        // and make an ArrayAdapter out of this list
+        // note the call to makeEvalList():
         ArrayAdapter<String> adapter = new ArrayAdapter(this, R.layout.eval_task_view, R.id.taskField, makeEvalList(minutes));
+
+        // set this ArrayAdapter as the ListAdapter for this activity (show on the UI). This should
+        // only be done once per EvalSheet activity.
         this.setListAdapter(adapter);
     }
 
@@ -67,13 +73,12 @@ public class EvalSheet extends ListActivity {
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
 
     /**
-     * This method fills an internal arrayList of taskItem object, from a table in the app's
+     * This method fills an internal arrayList of taskItem objects, from a table in the app's
      * database
      */
     public void fillInternalList(){
@@ -86,6 +91,7 @@ public class EvalSheet extends ListActivity {
 
 
         if (cursor.moveToFirst() != false){
+            // for each row returned by the sql cursor:
             for(int i=0; i<cursor.getCount(); i++){
                 String task = cursor.getString(cursor.getColumnIndex(TaskContract.Columns.TASK));
                 int priority = cursor.getInt(cursor.getColumnIndex(TaskContract.Columns.PRIORITY));
@@ -107,14 +113,14 @@ public class EvalSheet extends ListActivity {
      * @return
      */
     private List<String> makeEvalList(int free_time) {
+
         // take the whole list, and set their calculated worths to zero.
         for (int i = 0; i < taskList.size(); i++) {
             taskList.get(i).updateNextWorth(0);
         }
 
+        // initialize the assignedTimes array
         int[] assignedTimes = new int[taskList.size()];
-
-        // set all the nextWorths first:
 
         while (free_time > 0) {
             int bestIndex = -1;
@@ -149,22 +155,26 @@ public class EvalSheet extends ListActivity {
     }
 
     /**
-     * sort by priority
+     * sort taskList by priority
      */
     public void prioritySort() {
+
+
         List<TaskItem> list = this.taskList;
 
-        for (int i = 1; i < list.size(); i++) {
-            TaskItem next = list.get(i);
-            // find the insertion location while moving all larger element up
-            int j = i;
-            while (j > 0 && list.get(j - 1).priority > next.priority) {
-                list.set(j, list.get(j - 1));
-                j--;
+        Collections.sort(taskList, new Comparator<TaskItem>() {
+            @Override
+            public int compare(TaskItem t1, TaskItem t2) {
+
+                if (t1.priority == t2.priority){
+                    // look at the minutes instead:
+                    return t1.minutes - t2.minutes;
+                } else {
+                    return t1.priority - t2.priority; // Ascending
+                }
             }
-            // insert the element
-            list.set(j,next);
-        }
+
+        });
 
     }
 

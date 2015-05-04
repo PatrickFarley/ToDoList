@@ -24,24 +24,28 @@ import edu.wheaton.patrickfarley.todolist.db.TaskDBHelper;
 import edu.wheaton.patrickfarley.todolist.evaluation.EvalSheet;
 
 
-// since it extends ListActivity, it must implement a ListView in its layout.
+// the MainActivity is a ListActivity
 public class MainActivity extends ListActivity {
 
     private TaskDBHelper helper;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        SQLiteDatabase sqlDB = new TaskDBHelper(this).getWritableDatabase();
+        // use helper to reference the database:
+        helper = new TaskDBHelper(this);
+        SQLiteDatabase sqlDB = helper.getWritableDatabase();
+
+        // query a column in the database (this is only for logging purposes
         Cursor cursor = sqlDB.query(TaskContract.TABLE, new String[]{TaskContract.Columns.TASK},
                 null,null,null,null,null);
         cursor.moveToFirst();
         while(cursor.moveToNext()) {
             Log.d("MainActivity cursor",cursor.getString(cursor.getColumnIndexOrThrow(TaskContract.Columns.TASK)));
         }
+        // write from the database to the user interface:
         updateUI();
     }
 
@@ -54,11 +58,10 @@ public class MainActivity extends ListActivity {
     }
 
     @Override
-    //??? need an alertDialog with 3 different fields.
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
 
-            // if the add action icon is clicked:
+            // if the 'add' icon is clicked:
             case R.id.action_add_task:
                 Log.d("MainActivity", "Add a new task");
 
@@ -74,7 +77,7 @@ public class MainActivity extends ListActivity {
                 // pass the same view into the alertDialog, for the user to ineract with
                 builder.setView(newView);
 
-                // set "add" button
+                // set "add" button action
                 builder.setPositiveButton("add",new DialogInterface.OnClickListener(){
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i){
@@ -84,9 +87,9 @@ public class MainActivity extends ListActivity {
                         final EditText priorityField = (EditText)newView.findViewById(R.id.priorityEntry);
                         final EditText timeField = (EditText)newView.findViewById(R.id.timeEntry);
 
-                        String task = "unnamed task";
-                        int priority = -1;
-                        int time = -1;
+                        String task;
+                        int priority;
+                        int time;
 
                         try {
                             task = taskField.getText().toString();
@@ -101,9 +104,9 @@ public class MainActivity extends ListActivity {
                             return;
                         }
 
-                        // construct a TaskDBHelper object inside this method (using this activity's
-                        // innate database)
+                        // construct a TaskDBHelper object here
                         helper = new TaskDBHelper(MainActivity.this);
+
                         // instantiate the database: this automatically references MainActivity's
                         // innate database
                         SQLiteDatabase db = helper.getWritableDatabase();
@@ -111,18 +114,22 @@ public class MainActivity extends ListActivity {
                         // make a ContentValues object
                         ContentValues values = new ContentValues();
                         values.clear();
-                        // put our task string into the TASK column of the ContentValues object
+
+                        // put our info into the appropriate columns of the ContentValues object
                         values.put(TaskContract.Columns.TASK,task);
                         values.put(TaskContract.Columns.PRIORITY,priority);
                         values.put(TaskContract.Columns.TIME,time);
+
                         // insert the colums from the ContentValues object into the referenced
                         // database table.
                         db.insertWithOnConflict(TaskContract.TABLE,null,values, SQLiteDatabase.CONFLICT_IGNORE);
+
+                        // update the UI from the database
                         updateUI();
                     }
                 });
 
-                // set "Cancel" button
+                // set "Cancel" button action
                 builder.setNegativeButton("Cancel",null);
                 // create and display the Alert Dialog
                 builder.create().show();
@@ -132,6 +139,11 @@ public class MainActivity extends ListActivity {
         }
     }
 
+    /**
+     * Opens the apps database, reads certain data, constructs a listAdapter,
+     * and sets it as this activity's listAdapter for the list view
+     *
+     */
     private void updateUI() {
 
         // open the database and get a cursor over the desired fields
@@ -160,6 +172,13 @@ public class MainActivity extends ListActivity {
         this.setListAdapter(listAdapter);
     }
 
+    /**
+     * when 'Done' button is clicked
+     * removes the corresponding entry from the database, based on the name of the task
+     * being removed.
+     *
+     * @param view
+     */
     public void onDoneButtonClick(View view) {
         // get a ref to the parent view of the calling button (get the listView)
         View v = (View) view.getParent();
@@ -186,6 +205,12 @@ public class MainActivity extends ListActivity {
         updateUI();
     }
 
+    /**
+     * when 'Evaluate' button is clicked
+     * reads from the adjacent EditText field and constructs an intent to start the
+     * EvalSheet activity.
+     * @param view
+     */
     public void onEvaluate(View view) {
         Log.d("MainActivity","onEvaluate has been called");
         Intent intent = new Intent(this, EvalSheet.class);
