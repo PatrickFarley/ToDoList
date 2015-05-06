@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -168,8 +169,77 @@ public class MainActivity extends ListActivity {
                         R.id.timeField},// parallel array of layout object to bind data to
                 0);
 
+        /*
+        ((EditText) findViewById(R.id.outerlayout)).setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            public boolean onEditorAction(TextView arg0, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    switch (keyCode) {
+                        case KeyEvent.KEYCODE_ENTER:
+                            onTaskEdit(arg0);
+                            return true;
+                        default:
+                            break;
+                    }
+                }
+                return false;
+            }
+
+        });
+        */
+
         // this activity displays a ListView and uses a ListAdapter to bind the data to the view
         this.setListAdapter(listAdapter);
+    }
+
+    /**
+     * when the priority or time fields of a task item is edited, update the information in the
+     * database
+     */
+    public void onTaskEdit(View view) {
+        // get a ref to the parent view of the calling button (get the listView)
+        View v = (View) view.getParent();
+        // get a ref to the TextView corresponding to this button
+        TextView taskField = (TextView) v.findViewById(R.id.taskField);
+        EditText priorityField = (EditText) v.findViewById(R.id.priorityField);
+        EditText timeField  = (EditText) v.findViewById(R.id.timeField);
+        String task;
+        int priority;
+        int time;
+        try {
+            // get the info from edittexts:
+            task = taskField.getText().toString();
+            priority = Integer.parseInt(priorityField.getText().toString());
+            time = Integer.parseInt(timeField.getText().toString());
+        } catch (NumberFormatException e) {
+            Context context = getApplicationContext();
+            CharSequence toastMsg = "Enter a positive integer for priority and time";
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(context, toastMsg, duration);
+            toast.show();
+            return;
+        }
+
+
+        // write an SQL command to delete said row from the table by matching its task value
+        String sql = String.format("UPDATE %s SET %s = %d , %s = %d WHERE %s = '%s'",
+                TaskContract.TABLE,
+                TaskContract.Columns.PRIORITY,
+                priority,
+                TaskContract.Columns.TIME,
+                time,
+                TaskContract.Columns.TASK,
+                task);
+
+        // construct a db helper with MainActivity's database, and use it to return a reference
+        // to said database
+        helper = new TaskDBHelper(MainActivity.this);
+        SQLiteDatabase sqlDB = helper.getWritableDatabase();
+
+        // execute the command in the database
+        sqlDB.execSQL(sql);
+
+        // finally, update the UI to the database, which is now missing the previous entry.
+        updateUI();
     }
 
     /**
@@ -206,7 +276,7 @@ public class MainActivity extends ListActivity {
     }
 
     /**
-     * when 'Evaluate' button is clicked
+     * when 'Evaluate' button is clicked:
      * reads from the adjacent EditText field and constructs an intent to start the
      * EvalSheet activity.
      * @param view
