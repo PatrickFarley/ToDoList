@@ -15,6 +15,9 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -35,11 +38,13 @@ public class MainActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+
         // use helper to reference the database:
         helper = new TaskDBHelper(this);
         SQLiteDatabase sqlDB = helper.getWritableDatabase();
 
-        // query a column in the database (this is only for logging purposes
+        // query a column in the database (this is only for logging purposes)
         Cursor cursor = sqlDB.query(TaskContract.TABLE, new String[]{TaskContract.Columns.TASK},
                 null,null,null,null,null);
         cursor.moveToFirst();
@@ -48,6 +53,8 @@ public class MainActivity extends ListActivity {
         }
         // write from the database to the user interface:
         updateUI();
+
+
     }
 
 
@@ -126,6 +133,7 @@ public class MainActivity extends ListActivity {
                         db.insertWithOnConflict(TaskContract.TABLE,null,values, SQLiteDatabase.CONFLICT_IGNORE);
 
                         // update the UI from the database
+
                         updateUI();
                     }
                 });
@@ -146,7 +154,7 @@ public class MainActivity extends ListActivity {
      *
      */
     private void updateUI() {
-
+        Log.i("updateUI","updateUI called");
         // open the database and get a cursor over the desired fields
         helper = new TaskDBHelper(MainActivity.this);
         SQLiteDatabase sqlDB = helper.getWritableDatabase();
@@ -155,92 +163,120 @@ public class MainActivity extends ListActivity {
                 TaskContract.Columns.PRIORITY, TaskContract.Columns.TIME},
                 null,null,null,null,null);
 
-        // this activity's ListAdapter. we must pass in the task_view layout, as well as the location
+
+
+        // construct this activity's ListAdapter: we must pass in the task_view layout, as well as the location
         // of the data to be presented.
-        SimpleCursorAdapter listAdapter = new SimpleCursorAdapter(
+        SimpleCursorAdapter taskListAdapter = new SimpleCursorAdapter(
                 this, // context
                 R.layout.task_view, // the layout template to use to present each data
-                cursor, // pass in cursor to bind to.
+                cursor, // pass in the cursor to bind to.
                 new String[] {TaskContract.Columns.TASK,
                         TaskContract.Columns.PRIORITY,
                         TaskContract.Columns.TIME}, // array of items to bind
                 new int[] {R.id.taskField,
                         R.id.priorityField,
-                        R.id.timeField},// parallel array of layout object to bind data to
-                0);
+                        R.id.timeField},// parallel corresponding array of layout object to bind data to
+                0) {
 
-        /*
-        ((EditText) findViewById(R.id.outerlayout)).setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            public boolean onEditorAction(TextView arg0, int keyCode, KeyEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    switch (keyCode) {
-                        case KeyEvent.KEYCODE_ENTER:
-                            onTaskEdit(arg0);
-                            return true;
-                        default:
-                            break;
+            // We override the getView method so that we can make changes to all task_views and their
+            // child views, as they are being created/filled by the SimpleCursorAdapter.
+            @Override
+            public View getView (int position, View convertView, ViewGroup parent) {
+                Log.d("SimpleCursorAdapter","getView called");
+                View view = super.getView(position, convertView, parent);
+
+                // we tag the view with its database row id.
+                view.setTag(getItemId(position));
+
+                // entryUpdateListener is assigned to the time and priority views below
+                View.OnKeyListener entryUpdateListener = new View.OnKeyListener() {
+
+                    @Override
+                    public boolean onKey(View v, int keyCode, KeyEvent event){
+                        if (event.getAction() == KeyEvent.ACTION_DOWN){
+                            if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                                Log.d("in Main", "key down enter pressed");
+
+                                // Hide the keyboard from view:
+                                InputMethodManager in = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                                in.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
+                                // get a ref to the parent of the calling view (will be a task_view)
+                                View parent = (View) v.getParent();
+
+                                // get refs to the views within the parent
+                                EditText priorityField = (EditText) parent.findViewById(R.id.priorityField);
+                                EditText timeField  = (EditText) parent.findViewById(R.id.timeField);
+
+                                // get a ref to the id tag of the parent
+                                long id = (long)parent.getTag();
+
+                                int priority;
+                                int time;
+
+                                try {
+                                    // get the info from the views:
+                                    priority = Integer.parseInt(priorityField.getText().toString());
+                                    time = Integer.parseInt(timeField.getText().toString());
+                                } catch (NumberFormatException e) {
+                                    Context context = getApplicationContext();
+                                    CharSequence toastMsg = "Enter a positive integer for priority and time";
+                                    int duration = Toast.LENGTH_SHORT;
+                                    Toast toast = Toast.makeText(context, toastMsg, duration);
+                                    toast.show();
+                                    return true;
+                                }
+
+                                Log.i("entryUpdateListener","priority= "+priority+" and time= "+time);
+
+                                // Now write an SQL command to update said row on the table by matching its _id value
+                                String sql = String.format("UPDATE %s SET %s = %d , %s = %d WHERE %s = %d",
+                                        TaskContract.TABLE,
+                                        TaskContract.Columns.PRIORITY,
+                                        priority,
+                                        TaskContract.Columns.TIME,
+                                        time,
+                                        TaskContract.Columns._ID,
+                                        id);
+
+                                // Construct a DB helper, and use it to return a reference
+                                // to MainActivity's database
+                                helper = new TaskDBHelper(MainActivity.this);
+                                SQLiteDatabase sqlDB = helper.getWritableDatabase();
+
+                                Log.d("SimpleCursorAdapter","command is "+sql);
+
+                                // execute the command in the database
+                                sqlDB.execSQL(sql);
+                                return true;
+                            }
+                        }
+                        return false;
                     }
-                }
-                return false;
+                };
+
+                EditText priorityField = (EditText) view.findViewById(R.id.priorityField);
+                priorityField.setOnKeyListener(entryUpdateListener);
+
+
+                EditText timeField = (EditText) view.findViewById(R.id.timeField);
+                timeField.setOnKeyListener(entryUpdateListener);
+
+                // getView method must return the original view (the task_view)
+                return view;
             }
+        };
 
-        });
-        */
-
-        // this activity displays a ListView and uses a ListAdapter to bind the data to the view
-        this.setListAdapter(listAdapter);
+        // MainActivity displays a ListView and uses a ListAdapter to bind the data to the view.
+        // We pass in the taskListAdapter, defined above
+        this.setListAdapter(taskListAdapter);
     }
 
-    /**
-     * when the priority or time fields of a task item is edited, update the information in the
-     * database
-     */
-    public void onTaskEdit(View view) {
-        // get a ref to the parent view of the calling button (get the listView)
-        View v = (View) view.getParent();
-        // get a ref to the TextView corresponding to this button
-        TextView taskField = (TextView) v.findViewById(R.id.taskField);
-        EditText priorityField = (EditText) v.findViewById(R.id.priorityField);
-        EditText timeField  = (EditText) v.findViewById(R.id.timeField);
-        String task;
-        int priority;
-        int time;
-        try {
-            // get the info from edittexts:
-            task = taskField.getText().toString();
-            priority = Integer.parseInt(priorityField.getText().toString());
-            time = Integer.parseInt(timeField.getText().toString());
-        } catch (NumberFormatException e) {
-            Context context = getApplicationContext();
-            CharSequence toastMsg = "Enter a positive integer for priority and time";
-            int duration = Toast.LENGTH_SHORT;
-            Toast toast = Toast.makeText(context, toastMsg, duration);
-            toast.show();
-            return;
-        }
 
 
-        // write an SQL command to delete said row from the table by matching its task value
-        String sql = String.format("UPDATE %s SET %s = %d , %s = %d WHERE %s = '%s'",
-                TaskContract.TABLE,
-                TaskContract.Columns.PRIORITY,
-                priority,
-                TaskContract.Columns.TIME,
-                time,
-                TaskContract.Columns.TASK,
-                task);
 
-        // construct a db helper with MainActivity's database, and use it to return a reference
-        // to said database
-        helper = new TaskDBHelper(MainActivity.this);
-        SQLiteDatabase sqlDB = helper.getWritableDatabase();
-
-        // execute the command in the database
-        sqlDB.execSQL(sql);
-
-        // finally, update the UI to the database, which is now missing the previous entry.
-        updateUI();
-    }
+    
 
     /**
      * when 'Done' button is clicked
