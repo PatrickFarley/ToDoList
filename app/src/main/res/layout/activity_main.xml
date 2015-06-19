@@ -63,7 +63,7 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
-        android:layout_height="75dp">
+        android:layout_height="55dp">
 
         <EditText
             android:layout_width="match_parent"
@@ -73,7 +73,8 @@
             android:layout_weight="1"
             android:inputType="number"
             android:focusable="true"
-            android:focusableInTouchMode="true"/>
+            android:focusableInTouchMode="true"
+            android:selectAllOnFocus="true"/>
 
         <Button
             android:layout_width="match_parent"

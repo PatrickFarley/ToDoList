@@ -183,10 +183,9 @@ public class MainActivity extends ListActivity {
             // child views, as they are being created/filled by the SimpleCursorAdapter.
             @Override
             public View getView (int position, View convertView, ViewGroup parent) {
-                Log.d("SimpleCursorAdapter","getView called");
                 View view = super.getView(position, convertView, parent);
 
-                // we tag the view with its database row id.
+                // we tag the view with its database row id
                 view.setTag(getItemId(position));
 
                 // entryUpdateListener is assigned to the time and priority views below
@@ -276,7 +275,7 @@ public class MainActivity extends ListActivity {
 
 
 
-    
+
 
     /**
      * when 'Done' button is clicked
