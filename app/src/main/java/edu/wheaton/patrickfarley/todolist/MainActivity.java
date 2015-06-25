@@ -179,7 +179,7 @@ public class MainActivity extends ListActivity {
                 0) {
 
             // We override the getView method so that we can make changes to all task_views and their
-            // child views, as they are being created/filled by the SimpleCursorAdapter.
+            // child views as they are being created/filled by the SimpleCursorAdapter.
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
@@ -187,9 +187,9 @@ public class MainActivity extends ListActivity {
                 // we tag the view with its database row id
                 long viewId = getItemId(position);
 
-                // editAlertListener is assigned to the time and priority views below
+                // myEditAlertListener is assigned to the task, time and priority views as their
+                // OnClickListeners
                 View.OnClickListener myEditAlertListener = new EditAlertListener(viewId) ;
-
                 view.findViewById(R.id.taskField).setOnClickListener(myEditAlertListener);
                 view.findViewById(R.id.priorityField).setOnClickListener(myEditAlertListener);
                 view.findViewById(R.id.timeField).setOnClickListener(myEditAlertListener);
@@ -266,105 +266,113 @@ public class MainActivity extends ListActivity {
 
     }
 
-
+    /**
+     * This non-static inner class is used as the onClickListener for the view objects that make up the
+     * task info on the listView (the name, priority, and time fields). It presents an Alert Dialog
+     * that allows the user to change any of these 3 fields. Upon hitting "enter", the changes will be
+     * saved to the appropriate row of the "tasks" table in this application's database.
+     */
     private class EditAlertListener implements View.OnClickListener {
 
         long viewId;
 
+        // Constructor: the row id of the calling view is passed in.
         public EditAlertListener(long viewId){
             this.viewId = viewId;
         }
 
+
         public void onClick(View v) {
 
+            // reference the parent view (which is a task_view object)
             View parent =(View) v.getParent();
-        Log.d("in Main", "an EditText is clicked");
+
+            // create an AlertDialog Builder object
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("Edit Item");
+
+            // inflate a View called startView with the new_task_entry layout
+            // (this is the view the user will interact with)
+            final LayoutInflater inflater = getLayoutInflater();
+            final View startView = inflater.inflate(R.layout.new_task_entry, null);
 
 
-        // use an AlertDialog Builder object
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("edit item");
+            // Fill in the existing information for this task (from the 3 fields):
 
-        // construct a View with the new_task_entry layout
-        final LayoutInflater inflater = getLayoutInflater();
-        final View startView = inflater.inflate(R.layout.new_task_entry, null);
+            // get references to the 3 fields on this parent view:
+            TextView taskField = (TextView) parent.findViewById(R.id.taskField);
+            TextView priorityField = (TextView) parent.findViewById(R.id.priorityField);
+            TextView timeField = (TextView) parent.findViewById(R.id.timeField);
 
+            // assign the text from the 3 fields to string variables
+            String oldName = taskField.getText().toString();
+            String oldPriority = priorityField.getText().toString();
+            String oldTime = timeField.getText().toString();
 
-        // Fill in the existing information for this task:
+            // get references to the corresponding 3 views on this AlertDialog's view:
+            EditText startName = (EditText) startView.findViewById(R.id.taskEntry);
+            EditText startPriority = (EditText) startView.findViewById(R.id.priorityEntry);
+            EditText startTime = (EditText) startView.findViewById(R.id.timeEntry);
 
-        TextView taskField = (TextView) parent.findViewById(R.id.taskField);
-        TextView priorityField = (TextView) parent.findViewById(R.id.priorityField);
-        TextView timeField = (TextView) parent.findViewById(R.id.timeField);
+            // set the text in this AlertDialog's 3 views to the corresponding fields for this task:
+            startName.setText(oldName);
+            startPriority.setText(oldPriority);
+            startTime.setText(oldTime);
 
-        String oldName = taskField.getText().toString();
-        String oldPriority = priorityField.getText().toString();
-        String oldTime = timeField.getText().toString();
+            // set the view to the alertDialog
+            builder.setView(startView);
 
-        EditText startName = (EditText) startView.findViewById(R.id.taskEntry);
-        EditText startPriority = (EditText) startView.findViewById(R.id.priorityEntry);
-        EditText startTime = (EditText) startView.findViewById(R.id.timeEntry);
+            // set "enter" button action
+            builder.setPositiveButton("enter", new DialogInterface.OnClickListener() {
 
-        startName.setText(oldName);
-        startPriority.setText(oldPriority);
-        startTime.setText(oldTime);
+                public void onClick(DialogInterface dialogInterface, int i) {
 
+                    // reference the entered data and store it in variables:
 
-        // pass the view into the alertDialog, for the user to ineract with
-        builder.setView(startView);
+                    final EditText newName = (EditText) startView.findViewById(R.id.taskEntry);
+                    final EditText newPriority = (EditText) startView.findViewById(R.id.priorityEntry);
+                    final EditText newTime = (EditText) startView.findViewById(R.id.timeEntry);
 
-        // set "enter" button action
-        builder.setPositiveButton("enter", new DialogInterface.OnClickListener() {
+                    String task;
+                    int priority;
+                    int time;
 
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
+                    try {
+                        task = newName.getText().toString();
+                        priority = Integer.parseInt(newPriority.getText().toString());
+                        time = Integer.parseInt(newTime.getText().toString());
+                    } catch (NumberFormatException e) {
+                        Context context = getApplicationContext();
+                        CharSequence toastMsg = "Enter a positive integer for priority and time";
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast toast = Toast.makeText(context, toastMsg, duration);
+                        toast.show();
+                        return;
+                    }
 
-                // store entered data:
-                final EditText taskField = (EditText) startView.findViewById(R.id.taskEntry);
-                final EditText priorityField = (EditText) startView.findViewById(R.id.priorityEntry);
-                final EditText timeField = (EditText) startView.findViewById(R.id.timeEntry);
+                    // construct a TaskDBHelper object here
+                    helper = new TaskDBHelper(MainActivity.this);
 
-                String task;
-                int priority;
-                int time;
+                    // reference the database
+                    SQLiteDatabase db = helper.getWritableDatabase();
 
-                try {
-                    task = taskField.getText().toString();
-                    priority = Integer.parseInt(priorityField.getText().toString());
-                    time = Integer.parseInt(timeField.getText().toString());
-                } catch (NumberFormatException e) {
-                    Context context = getApplicationContext();
-                    CharSequence toastMsg = "Enter a positive integer for priority and time";
-                    int duration = Toast.LENGTH_SHORT;
-                    Toast toast = Toast.makeText(context, toastMsg, duration);
-                    toast.show();
-                    return;
+                    // make a blank ContentValues object
+                    ContentValues values = new ContentValues();
+                    values.clear();
+
+                    // put our entered data into the appropriate columns of the ContentValues object
+                    values.put(TaskContract.Columns.TASK, task);
+                    values.put(TaskContract.Columns.PRIORITY, priority);
+                    values.put(TaskContract.Columns.TIME, time);
+
+                    // update the specified row in the referenced database table with the
+                    // data from the ContentValues object
+                    db.update(TaskContract.TABLE, values, TaskContract.Columns._ID + " = " + viewId, null);
+
+                    // update the UI from the database
+                    updateUI();
                 }
-
-                // construct a TaskDBHelper object here
-                helper = new TaskDBHelper(MainActivity.this);
-
-                // reference the database: this automatically references MainActivity's
-                // database
-                SQLiteDatabase db = helper.getWritableDatabase();
-
-                // make a ContentValues object
-                ContentValues values = new ContentValues();
-                values.clear();
-
-                // put our info into the appropriate columns of the ContentValues object
-                values.put(TaskContract.Columns.TASK, task);
-                values.put(TaskContract.Columns.PRIORITY, priority);
-                values.put(TaskContract.Columns.TIME, time);
-
-                // insert the columns from the ContentValues object into the referenced
-                // database table.
-                db.update(TaskContract.TABLE, values, TaskContract.Columns._ID + " = " + viewId, null);
-
-                // update the UI from the database
-
-                updateUI();
-            }
-        });
+            });
             // set "Cancel" button action
             builder.setNegativeButton("Cancel",null);
             // create and display the Alert Dialog
