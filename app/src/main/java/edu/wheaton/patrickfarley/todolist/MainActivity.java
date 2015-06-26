@@ -9,16 +9,15 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.NumberPicker;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -92,8 +91,12 @@ public class MainActivity extends ListActivity {
 
                         // store entered data:
                         final EditText taskField = (EditText)newView.findViewById(R.id.taskEntry);
-                        final EditText priorityField = (EditText)newView.findViewById(R.id.priorityEntry);
-                        final EditText timeField = (EditText)newView.findViewById(R.id.timeEntry);
+                        final NumberPicker priorityField = (NumberPicker)newView.findViewById(R.id.priorityEntry);
+                        numberPickerInit(priorityField,1,10,1);
+                        priorityField.setValue(5);
+                        final NumberPicker timeField = (NumberPicker)newView.findViewById(R.id.timeEntry);
+                        numberPickerInit(timeField, Const.MIN_TIME, Const.MAX_TIME, Const.TIME_INCREMENT);
+                        timeField.setValue((Const.MAX_TIME-Const.MIN_TIME)/(2*Const.TIME_INCREMENT));
 
                         String task;
                         int priority;
@@ -101,8 +104,8 @@ public class MainActivity extends ListActivity {
 
                         try {
                             task = taskField.getText().toString();
-                            priority = Integer.parseInt(priorityField.getText().toString());
-                            time = Integer.parseInt(timeField.getText().toString());
+                            priority = 1 + ((priorityField.getValue())-1)*1;
+                            time = Const.MIN_TIME + ((timeField.getValue())-1)*Const.TIME_INCREMENT;
                         } catch (NumberFormatException e) {
                             Context context = getApplicationContext();
                             CharSequence toastMsg = "Enter a positive integer for priority and time";
@@ -299,7 +302,7 @@ public class MainActivity extends ListActivity {
 
             // Fill in the existing information for this task (from the 3 fields):
 
-            // get references to the 3 fields on this parent view:
+            // get references to the 3 fields on this view:
             TextView taskField = (TextView) parent.findViewById(R.id.taskField);
             TextView priorityField = (TextView) parent.findViewById(R.id.priorityField);
             TextView timeField = (TextView) parent.findViewById(R.id.timeField);
@@ -311,13 +314,17 @@ public class MainActivity extends ListActivity {
 
             // get references to the corresponding 3 views on this AlertDialog's view:
             EditText startName = (EditText) startView.findViewById(R.id.taskEntry);
-            EditText startPriority = (EditText) startView.findViewById(R.id.priorityEntry);
-            EditText startTime = (EditText) startView.findViewById(R.id.timeEntry);
+
+
+            NumberPicker startPriority = (NumberPicker) startView.findViewById(R.id.priorityEntry);
+            numberPickerInit(startPriority,1,10,1);
+            NumberPicker startTime = (NumberPicker) startView.findViewById(R.id.timeEntry);
+            numberPickerInit(startTime, Const.MIN_TIME, Const.MAX_TIME, Const.TIME_INCREMENT);
 
             // set the text in this AlertDialog's 3 views to the corresponding fields for this task:
             startName.setText(oldName);
-            startPriority.setText(oldPriority);
-            startTime.setText(oldTime);
+            startPriority.setValue(1+(Integer.parseInt(oldPriority)- 1)/ 1);
+            startTime.setValue(1+(Integer.parseInt(oldTime)-Const.MIN_TIME)/Const.TIME_INCREMENT);
 
             // set the view to the alertDialog
             builder.setView(startView);
@@ -330,8 +337,8 @@ public class MainActivity extends ListActivity {
                     // reference the entered data and store it in variables:
 
                     final EditText newName = (EditText) startView.findViewById(R.id.taskEntry);
-                    final EditText newPriority = (EditText) startView.findViewById(R.id.priorityEntry);
-                    final EditText newTime = (EditText) startView.findViewById(R.id.timeEntry);
+                    final NumberPicker newPriority = (NumberPicker) startView.findViewById(R.id.priorityEntry);
+                    final NumberPicker newTime = (NumberPicker) startView.findViewById(R.id.timeEntry);
 
                     String task;
                     int priority;
@@ -339,8 +346,8 @@ public class MainActivity extends ListActivity {
 
                     try {
                         task = newName.getText().toString();
-                        priority = Integer.parseInt(newPriority.getText().toString());
-                        time = Integer.parseInt(newTime.getText().toString());
+                        priority = 1 + ((newPriority.getValue())-1)*1;
+                        time = Const.MIN_TIME + ((newTime.getValue())-1)*Const.TIME_INCREMENT;
                     } catch (NumberFormatException e) {
                         Context context = getApplicationContext();
                         CharSequence toastMsg = "Enter a positive integer for priority and time";
@@ -379,4 +386,69 @@ public class MainActivity extends ListActivity {
             builder.create().show();
         }
     }
+
+    /**
+     * a helper method.. for NumberPicker objects
+     */
+
+    public void numberPickerInit(NumberPicker numberPicker, int min, int max, int increment) {
+
+
+        int n = (max/increment - min/increment +1);
+        String[] values = new String[n];
+        for(int i = 0; i<n; i++){
+            values[i] = Integer.toString(i*increment + min);
+            System.out.println(values[i]);
+        }
+
+        numberPicker.setMaxValue(max / increment);
+        numberPicker.setMinValue(min / increment);
+        numberPicker.setDisplayedValues(values);
+       // numberPicker.setMinValue(min);
+       // numberPicker.setMaxValue(max);
+        System.out.println(numberPicker.getMinValue()+"");
+        System.out.println(numberPicker.getMaxValue()+"");
+
+        numberPicker.setWrapSelectorWheel(false);
+    }
+
+    /**
+     *
+     */
+
+
+
+    /**
+     * custom class...
+     */
+    public class MyNumberPicker extends NumberPicker {
+        private int min, max, increment;
+
+        public MyNumberPicker(Context context,AttributeSet attrs){
+            super(context,attrs);
+        }
+
+        public void initValues(int min, int max, int increment){
+            this.min = min;
+            this.max = max;
+            this.increment = increment;
+
+            int n = (max/increment - min/increment +1);
+            String[] values = new String[n];
+            for(int i = 0; i<n; i++){
+                values[i] = Integer.toString(i*increment + min);
+                System.out.println(values[i]);
+            }
+
+            setMaxValue(max / increment);
+            setMinValue(min / increment);
+            setDisplayedValues(values);
+        }
+
+        @Override
+        public void setValue(int value){
+            super.setValue(value * increment + min);
+        }
+    }
+
 }
