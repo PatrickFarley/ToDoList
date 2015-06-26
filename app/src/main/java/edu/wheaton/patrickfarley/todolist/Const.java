@@ -6,6 +6,7 @@ package edu.wheaton.patrickfarley.todolist;
 public abstract class Const {
     public static final int TIME_INCREMENT = 5;
     public static final int MAX_TIME = 240;
+    public static final int MIN_TIME = 5;
 
-    public static final int MIN_TIME = TIME_INCREMENT;
+    public static final int TIME_DEFAULT = 30;
 }

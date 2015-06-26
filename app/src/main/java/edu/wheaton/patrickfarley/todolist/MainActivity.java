@@ -81,6 +81,17 @@ public class MainActivity extends ListActivity {
                 final LayoutInflater inflater = getLayoutInflater();
                 final View newView = inflater.inflate(R.layout.new_task_entry, null);
 
+
+                EditText taskEntry = (EditText)newView.findViewById(R.id.taskEntry);
+                taskEntry.setText("new task");
+                NumberPicker priorityEntry = (NumberPicker)newView.findViewById(R.id.priorityEntry);
+                numberPickerInit(priorityEntry,1,10,1);
+                priorityEntry.setValue(5);
+                NumberPicker timeEntry = (NumberPicker)newView.findViewById(R.id.timeEntry);
+                numberPickerInit(timeEntry, Const.MIN_TIME, Const.MAX_TIME, Const.TIME_INCREMENT);
+                timeEntry.setValue((Const.TIME_DEFAULT - Const.MIN_TIME)/Const.TIME_INCREMENT +1);
+
+
                 // pass the same view into the alertDialog, for the user to ineract with
                 builder.setView(newView);
 
@@ -89,14 +100,10 @@ public class MainActivity extends ListActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i){
 
-                        // store entered data:
-                        final EditText taskField = (EditText)newView.findViewById(R.id.taskEntry);
-                        final NumberPicker priorityField = (NumberPicker)newView.findViewById(R.id.priorityEntry);
-                        numberPickerInit(priorityField,1,10,1);
-                        priorityField.setValue(5);
-                        final NumberPicker timeField = (NumberPicker)newView.findViewById(R.id.timeEntry);
-                        numberPickerInit(timeField, Const.MIN_TIME, Const.MAX_TIME, Const.TIME_INCREMENT);
-                        timeField.setValue((Const.MAX_TIME-Const.MIN_TIME)/(2*Const.TIME_INCREMENT));
+                        // reference the entered data and store it in variables:
+                        final EditText taskField = (EditText) newView.findViewById(R.id.taskEntry);
+                        final NumberPicker priorityField = (NumberPicker) newView.findViewById(R.id.priorityEntry);
+                        final NumberPicker timeField = (NumberPicker) newView.findViewById(R.id.timeEntry);
 
                         String task;
                         int priority;
@@ -187,11 +194,16 @@ public class MainActivity extends ListActivity {
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
 
-                // we tag the view with its database row id
+
+                // store the original database row id
                 long viewId = getItemId(position);
 
+                // we tag the view with its row id so this data is never lost
+                view.setTag(viewId);
+
+
                 // myEditAlertListener is assigned to the task, time and priority views as their
-                // OnClickListeners
+                // OnClickListeners (passing in the db row id)
                 View.OnClickListener myEditAlertListener = new EditAlertListener(viewId) ;
                 view.findViewById(R.id.taskField).setOnClickListener(myEditAlertListener);
                 view.findViewById(R.id.priorityField).setOnClickListener(myEditAlertListener);
@@ -221,16 +233,15 @@ public class MainActivity extends ListActivity {
     public void onDoneButtonClick(View view) {
         // get a ref to the parent view of the calling button (get the listView)
         View parent = (View) view.getParent();
-        // get a ref to the TextView corresponding to this button
-        TextView taskField = (TextView) parent.findViewById(R.id.taskField);
-        // get the text from that TextView
-        String task = taskField.getText().toString();
 
-        // write an SQL command to delete said row from the table by matching its task value
-        String sql = String.format("DELETE FROM %s WHERE %s = '%s'",
+        // get this task_view's original db row id (stored as tag)
+        long viewId = (long)parent.getTag();
+
+        // write an SQL command to delete said row from the table by matching its row id
+        String sql = String.format("DELETE FROM %s WHERE %s = %d",
                 TaskContract.TABLE,
-                TaskContract.Columns.TASK,
-                task);
+                TaskContract.Columns._ID,
+                viewId);
 
         // construct a db helper with MainActivity's database, and use it to return a reference
         // to said database
