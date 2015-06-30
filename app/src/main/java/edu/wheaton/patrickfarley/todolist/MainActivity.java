@@ -85,8 +85,8 @@ public class MainActivity extends ListActivity {
                 EditText taskEntry = (EditText)newView.findViewById(R.id.taskEntry);
                 taskEntry.setText("new task");
                 NumberPicker priorityEntry = (NumberPicker)newView.findViewById(R.id.priorityEntry);
-                numberPickerInit(priorityEntry,1,10,1);
-                priorityEntry.setValue(5);
+                numberPickerInit(priorityEntry,Const.MIN_PRIO,Const.MAX_PRIO,Const.PRIO_INCREMENT);
+                priorityEntry.setValue(Const.PRIO_DEFAULT);
                 NumberPicker timeEntry = (NumberPicker)newView.findViewById(R.id.timeEntry);
                 numberPickerInit(timeEntry, Const.MIN_TIME, Const.MAX_TIME, Const.TIME_INCREMENT);
                 timeEntry.setValue((Const.TIME_DEFAULT - Const.MIN_TIME)/Const.TIME_INCREMENT +1);
@@ -111,7 +111,7 @@ public class MainActivity extends ListActivity {
 
                         try {
                             task = taskField.getText().toString();
-                            priority = 1 + ((priorityField.getValue())-1)*1;
+                            priority = Const.MIN_PRIO + ((priorityField.getValue())-1)*Const.PRIO_INCREMENT;
                             time = Const.MIN_TIME + ((timeField.getValue())-1)*Const.TIME_INCREMENT;
                         } catch (NumberFormatException e) {
                             Context context = getApplicationContext();
@@ -328,13 +328,13 @@ public class MainActivity extends ListActivity {
 
 
             NumberPicker startPriority = (NumberPicker) startView.findViewById(R.id.priorityEntry);
-            numberPickerInit(startPriority,1,10,1);
+            numberPickerInit(startPriority,Const.MIN_PRIO,Const.MAX_PRIO,Const.PRIO_INCREMENT);
             NumberPicker startTime = (NumberPicker) startView.findViewById(R.id.timeEntry);
             numberPickerInit(startTime, Const.MIN_TIME, Const.MAX_TIME, Const.TIME_INCREMENT);
 
             // set the text in this AlertDialog's 3 views to the corresponding fields for this task:
             startName.setText(oldName);
-            startPriority.setValue(1+(Integer.parseInt(oldPriority)- 1)/ 1);
+            startPriority.setValue(1+(Integer.parseInt(oldPriority)- Const.MIN_PRIO)/ Const.PRIO_INCREMENT);
             startTime.setValue(1+(Integer.parseInt(oldTime)-Const.MIN_TIME)/Const.TIME_INCREMENT);
 
             // set the view to the alertDialog
@@ -357,7 +357,7 @@ public class MainActivity extends ListActivity {
 
                     try {
                         task = newName.getText().toString();
-                        priority = 1 + ((newPriority.getValue())-1)*1;
+                        priority = Const.MIN_PRIO + ((newPriority.getValue())-1)*Const.PRIO_INCREMENT;
                         time = Const.MIN_TIME + ((newTime.getValue())-1)*Const.TIME_INCREMENT;
                     } catch (NumberFormatException e) {
                         Context context = getApplicationContext();
