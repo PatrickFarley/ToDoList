@@ -38,7 +38,7 @@
             android:layout_weight="1" />
     </LinearLayout>
 
-    <!-- Begin content row: -->
+
 
     <!-- Dummy view (to take auto focus) -->
     <View
@@ -47,6 +47,8 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         />
+
+    <!-- Begin content row: -->
 
     <LinearLayout
         android:orientation="horizontal"

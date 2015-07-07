@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.SimpleCursorAdapter;
@@ -83,6 +84,21 @@ public class MainActivity extends ListActivity {
 
                 EditText taskEntry = (EditText)newView.findViewById(R.id.taskEntry);
                 taskEntry.setHint("new task");
+
+                taskEntry.requestFocus();
+
+                taskEntry.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        if(!hasFocus) {
+                            InputMethodManager imm =  (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                        }
+                    }
+                });
+
+
+
                 NumberPicker priorityEntry = (NumberPicker)newView.findViewById(R.id.priorityEntry);
                 numberPickerInit(priorityEntry,Const.MIN_PRIO,Const.MAX_PRIO,Const.PRIO_INCREMENT);
                 priorityEntry.setValue(Const.PRIO_DEFAULT);
@@ -149,6 +165,11 @@ public class MainActivity extends ListActivity {
 
                 // set "Cancel" button action
                 builder.setNegativeButton("Cancel",null);
+
+                //show keyboard
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
+
                 // create and display the Alert Dialog
                 builder.create().show();
                 return true;
@@ -296,6 +317,8 @@ public class MainActivity extends ListActivity {
 
 
         public void onClick(View v) {
+
+            Log.i("MainActivity","Edit Item");
 
             // reference the parent view (which is a task_view object)
             View parent =(View) v.getParent();
