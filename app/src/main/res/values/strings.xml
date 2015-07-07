@@ -4,7 +4,7 @@
     <string name="app_name">ToDoList</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="evalButtonText">Evaluate</string>
+    <string name="evalButtonText">do stuff!</string>
     <string name="title_activity_eval_sheet">EvalSheet</string>
 
 </resources>

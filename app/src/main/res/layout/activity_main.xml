@@ -63,27 +63,47 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
-        android:layout_height="55dp">
+        android:layout_height="55dp"
+        android:gravity="center_vertical|center_horizontal"
+        android:layout_gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="I have "
+            android:id="@+id/textView"
+            android:layout_weight="0"
+            android:textSize="15sp"
+            android:layout_gravity="center_vertical" />
 
         <EditText
-            android:layout_width="match_parent"
+            android:layout_width="90dp"
             android:layout_height="match_parent"
             android:id="@+id/evalEntField"
             android:layout_gravity="start"
-            android:layout_weight="1"
+            android:layout_weight="0"
             android:inputType="number"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            android:selectAllOnFocus="true"/>
+            android:selectAllOnFocus="true"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" minutes to "
+            android:id="@+id/textView2"
+            android:layout_weight="0"
+            android:textSize="15sp" />
 
         <Button
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/evalButtonText"
             android:id="@+id/evalButton"
-            android:layout_gravity="start"
-            android:layout_weight="1"
-            android:onClick="onEvaluate" />
+            android:layout_weight="0"
+            android:onClick="onEvaluate"
+            android:textSize="15sp" />
 
 
         </LinearLayout>

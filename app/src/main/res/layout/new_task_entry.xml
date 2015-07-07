@@ -62,6 +62,8 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:id="@+id/taskEntry"
             android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:inputType="text"
             android:layout_weight="2" />
 
         <NumberPicker
