@@ -75,7 +75,6 @@ public class MainActivity extends ListActivity {
                 // use an AlertDialog Builder object
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("add a task");
-                builder.setMessage("What to do?");
 
                 // construct a View with the new_task_entry layout
                 final LayoutInflater inflater = getLayoutInflater();
