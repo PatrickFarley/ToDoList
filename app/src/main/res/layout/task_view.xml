@@ -47,6 +47,6 @@
         android:id = "@+id/doneButton"
 
         android:onClick="onDoneButtonClick"
-        android:layout_weight="1.3" />
+        android:layout_weight=".7" />
 
 </LinearLayout>

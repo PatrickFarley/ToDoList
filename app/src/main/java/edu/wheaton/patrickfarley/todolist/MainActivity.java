@@ -82,7 +82,7 @@ public class MainActivity extends ListActivity {
 
 
                 EditText taskEntry = (EditText)newView.findViewById(R.id.taskEntry);
-                taskEntry.setText("new task");
+                taskEntry.setHint("new task");
                 NumberPicker priorityEntry = (NumberPicker)newView.findViewById(R.id.priorityEntry);
                 numberPickerInit(priorityEntry,Const.MIN_PRIO,Const.MAX_PRIO,Const.PRIO_INCREMENT);
                 priorityEntry.setValue(Const.PRIO_DEFAULT);

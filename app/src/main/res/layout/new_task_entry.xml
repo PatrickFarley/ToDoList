@@ -51,7 +51,7 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="100dp"
         android:gravity="center_vertical">
 
         <EditText
@@ -64,7 +64,7 @@
 
         <NumberPicker
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:id="@+id/priorityEntry"
             android:selectAllOnFocus="true"
@@ -73,7 +73,7 @@
 
         <NumberPicker
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:inputType="number"
 
