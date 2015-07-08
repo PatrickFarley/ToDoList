@@ -1,0 +1,10 @@
+Changelist:
+
+insert icons
+
+implement MuNumberPicker?
+top priority option toggle
+add numerical coefficient for algorithm
+aesthetics on priority selector
+add done toasts
+tast entry grab focus on new task (and then lose it on click away)

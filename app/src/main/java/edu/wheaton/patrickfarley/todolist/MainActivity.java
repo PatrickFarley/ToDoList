@@ -85,20 +85,6 @@ public class MainActivity extends ListActivity {
                 EditText taskEntry = (EditText)newView.findViewById(R.id.taskEntry);
                 taskEntry.setHint("new task");
 
-                taskEntry.requestFocus();
-
-                taskEntry.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                    @Override
-                    public void onFocusChange(View v, boolean hasFocus) {
-                        if(!hasFocus) {
-                            InputMethodManager imm =  (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                        }
-                    }
-                });
-
-
-
                 NumberPicker priorityEntry = (NumberPicker)newView.findViewById(R.id.priorityEntry);
                 numberPickerInit(priorityEntry,Const.MIN_PRIO,Const.MAX_PRIO,Const.PRIO_INCREMENT);
                 priorityEntry.setValue(Const.PRIO_DEFAULT);
@@ -166,12 +152,15 @@ public class MainActivity extends ListActivity {
                 // set "Cancel" button action
                 builder.setNegativeButton("Cancel",null);
 
+                /*
                 //show keyboard
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
+                */
 
                 // create and display the Alert Dialog
                 builder.create().show();
+
                 return true;
             default:
                 return false;
@@ -421,9 +410,12 @@ public class MainActivity extends ListActivity {
     }
 
     /**
-     * a helper method.. for NumberPicker objects
+     * a helper method for NumberPicker objects
+     * @param numberPicker
+     * @param min
+     * @param max
+     * @param increment
      */
-
     public void numberPickerInit(NumberPicker numberPicker, int min, int max, int increment) {
 
 
@@ -431,28 +423,24 @@ public class MainActivity extends ListActivity {
         String[] values = new String[n];
         for(int i = 0; i<n; i++){
             values[i] = Integer.toString(i*increment + min);
-            System.out.println(values[i]);
+            //System.out.println(values[i]);
         }
 
         numberPicker.setMaxValue(max / increment);
         numberPicker.setMinValue(min / increment);
         numberPicker.setDisplayedValues(values);
-       // numberPicker.setMinValue(min);
-       // numberPicker.setMaxValue(max);
-        System.out.println(numberPicker.getMinValue()+"");
-        System.out.println(numberPicker.getMaxValue()+"");
+
+        //System.out.println(numberPicker.getMinValue()+"");
+       // System.out.println(numberPicker.getMaxValue()+"");
 
         numberPicker.setWrapSelectorWheel(false);
     }
 
-    /**
-     *
-     */
 
 
 
     /**
-     * custom class...
+     * custom class, not currently implemented...
      */
     public class MyNumberPicker extends NumberPicker {
         private int min, max, increment;
