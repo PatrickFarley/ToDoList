@@ -1,7 +1,8 @@
 Changelist:
 
-insert icons
 
+icon: move fist to the left
+make text field bigger
 implement MuNumberPicker?
 top priority option toggle
 add numerical coefficient for algorithm
